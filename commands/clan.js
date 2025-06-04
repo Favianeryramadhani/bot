@@ -13,7 +13,7 @@ module.exports = {
             for (var i = 0; i < members.length; i++) {
                 memberList += members[i].name + " (" + members[i].tag + ") 🏠" + members[i].townHallLevel + "\n";
             }
-            return await sock.sendMessage(messageInfoUpsert.messages[0].key.remoteJid, {text: `Clan info for ${clan.name}:\nTag: ${clan.tag}\nLevel: ${clan.level}\nWar Wins: ${clan.warWins}\nWar Win Streak: ${clan.warWinStreak}\nWar Ties: ${clan.warTies}\nRequired Trophies: ${clan.requiredTrophies}\nDescription: ${clan.description}\nLocation: ${clan.location.name}\nMembers:\n ${memberList}\n`, edit: send.key});
+            return await sock.sendMessage(messageInfoUpsert.messages[0].key.remoteJid, {text: `Clan info for ${clan.name}:\nTag: ${clan.tag}\n ${clan.badgeUrls}\nLevel: ${clan.level}\nWar Wins: ${clan.warWins}\nWar Lose: {$clan.warLosses}\nWar Win Streak: ${clan.warWinStreak}\nWar Ties: ${clan.warTies}\nRequired Trophies: ${clan.requiredTrophies}\nDescription: ${clan.description}\nLocation: ${clan.location.name}\nMembers:\n ${memberList}\n`, edit: send.key});
         }catch(err){
             console.log(err);
             await sock.sendMessage(messageInfoUpsert.messages[0].key.remoteJid, {text: "An error occurred! here is the error object:\n\n" + err + "\n\n", edit: send.key});
