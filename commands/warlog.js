@@ -1,46 +1,61 @@
+const moment = require('moment'); // pastikan kamu install moment: npm install moment
+
 module.exports = {
     name: 'warlog',
     description: 'Get war log of a clan',
     usage: '<clan tag>',
     run: async (sock, messageInfoUpsert, args, author, cocClient, sendError) => {
-        var send = await sock.sendMessage(messageInfoUpsert.messages[0].key.remoteJid, {text: "Fetching war log..."});
+        const jid = messageInfoUpsert.messages[0].key.remoteJid;
+        const send = await sock.sendMessage(jid, { text: "Fetching war log..." });
+
         try {
             if (!args[0]) {
-                return await sock.sendMessage(messageInfoUpsert.messages[0].key.remoteJid, {
+                return await sock.sendMessage(jid, {
                     text: "Please provide a clan tag!",
                     edit: send.key
                 });
             }
 
-            var clanTag = args[0].toUpperCase();
-            var warLog = await cocClient.getClanWarLog(clanTag);
+            const clanTag = args[0].toUpperCase();
+            const warLog = await cocClient.getClanWarLog(clanTag);
 
             if (!warLog || warLog.length === 0) {
-                return await sock.sendMessage(messageInfoUpsert.messages[0].key.remoteJid, {
-                    text: "No war log data found!",
+                return await sock.sendMessage(jid, {
+                    text: "No war log data found or war log is private!",
                     edit: send.key
                 });
             }
 
-            let warText = `📜 War Log for Clan ${clanTag}\n\n`;
-            for (let i = 0; i < Math.min(warLog.length, 5); i++) { // Limit to last 5 wars
+            for (let i = 0; i < Math.min(warLog.length, 3); i++) { // Ambil max 3 war
                 const war = warLog[i];
                 const result = war.result || 'Unknown';
-                warText += `⚔️ War ${i + 1}:\n`;
-                warText += `Opponent: ${war.opponent?.name || 'N/A'}\n`;
-                warText += `Result: ${result}\n`;
-                warText += `Our Stars: ${war.clan?.stars ?? '-'}, Their Stars: ${war.opponent?.stars ?? '-'}\n`;
-                warText += `Our Destruction: ${war.clan?.destructionPercentage ?? '-'}%, Their Destruction: ${war.opponent?.destructionPercentage ?? '-'}%\n\n`;
+                const opponentName = war.opponent?.name || 'Unknown Opponent';
+                const ourStars = war.clan?.stars ?? '-';
+                const theirStars = war.opponent?.stars ?? '-';
+
+                const ourBadge = war.clan?.badgeUrls?.small || null;
+                const theirBadge = war.opponent?.badgeUrls?.small || null;
+
+                const warEndTime = war.endTime ? moment(war.endTime, 'YYYYMMDDTHHmmss.SSSZ').format('DD MMM YYYY HH:mm') : 'Unknown Time';
+
+                const caption = 
+`⚔️ War ${i + 1}
+📅 Ended: ${warEndTime}
+🆚 Opponent: ${opponentName}
+🏆 Result: ${result}
+⭐ Stars: Us ${ourStars} vs Them ${theirStars}`;
+
+                // Kirim badge musuh + informasi
+                await sock.sendMessage(jid, {
+                    image: { url: theirBadge },
+                    caption: caption,
+                    edit: send.key
+                });
             }
 
-            return await sock.sendMessage(messageInfoUpsert.messages[0].key.remoteJid, {
-                text: warText,
-                edit: send.key
-            });
-
         } catch (err) {
-            console.log(err);
-            await sock.sendMessage(messageInfoUpsert.messages[0].key.remoteJid, {
+            console.error(err);
+            await sock.sendMessage(jid, {
                 text: "An error occurred! Here is the error object:\n\n" + err,
                 edit: send.key
             });
