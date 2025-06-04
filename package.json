@@ -7,7 +7,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.6.0",
+    "@whiskeysockets/baileys": "^6.7.18",
     "axios": "^1.9.0",
     "clashofclans.js": "^3.0.2",
     "install": "^0.13.0",
